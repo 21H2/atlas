@@ -51,23 +51,31 @@ jobs:
           export NDK_HOME=$PWD/android-ndk-r25b
           export PATH=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
 
-      # Step 4: Configure Kernel using the correct defconfig for Galaxy A21s
+      # Step 4: Download and set up the aarch64-linux-android toolchain
+      - name: Set up aarch64-linux-android Toolchain
+        run: |
+          wget https://releases.linaro.org/components/toolchain/binaries/latest/aarch64-linux-gnu/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
+          tar -xf gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu.tar.xz
+          export CROSS_COMPILE=$PWD/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+          export PATH=$PWD/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin:$PATH
+
+      # Step 5: Configure Kernel using the correct defconfig for Galaxy A21s
       - name: Configure Kernel
         run: |
           cd $GITHUB_WORKSPACE
           make ARCH=arm64 exynos850-a21snsxx_defconfig  # Correct defconfig for A21s
 
-      # Step 5: Build the Kernel using the Clang toolchain (android-ndk-r25b)
+      # Step 6: Build the Kernel using the Clang toolchain (android-ndk-r25b)
       - name: Build Kernel
         run: |
           make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc)
 
-      # Step 6: Create Boot Image (optional, but typical in kernel builds)
+      # Step 7: Create Boot Image (optional, but typical in kernel builds)
       - name: Create Boot Image
         run: |
           mkbootimg --kernel arch/arm64/boot/Image.gz --ramdisk ramdisk.img --cmdline "console=ttyS0,115200n8" -o boot.img
 
-      # Step 7: Upload the Boot Image as an artifact (for downloading after the build)
+      # Step 8: Upload the Boot Image as an artifact (for downloading after the build)
       - name: Upload Boot Image
         uses: actions/upload-artifact@v4
         with:
