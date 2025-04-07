@@ -59,7 +59,7 @@ jobs:
       # Step 5: Build the Kernel using the Clang toolchain (android-ndk-r25b)
       - name: Build Kernel
         run: |
-          make ARCH=arm64 CROSS_COMPILE=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/clang- -j$(nproc)
+          make ARCH=arm64 CROSS_COMPILE=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android- -j$(nproc)
 
       # Step 6: Create Boot Image (optional, but typical in kernel builds)
       - name: Create Boot Image
