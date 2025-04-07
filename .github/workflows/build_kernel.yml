@@ -1,26 +1,26 @@
-name: Build Exynos 850 Kernel
+name: Build Exynos 850 Kernel for Galaxy A21s
 
 on:
   push:
     branches:
-      - main   # Trigger on push to the main branch, or adjust as necessary
+      - main   # Trigger on push to the main branch (adjust if you need a different branch)
   pull_request:
     branches:
-      - main   # Trigger build for pull requests to main
-  workflow_dispatch: # Manually trigger the build process
+      - main   # Trigger build for pull requests to the main branch
+  workflow_dispatch: # Manually trigger the build process from the GitHub UI
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use Ubuntu-based runner
+    runs-on: ubuntu-latest  # Use an Ubuntu-based runner
 
     steps:
-      # Step 1: Checkout repository
+      # Step 1: Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
-          ref: main  # Replace with the branch you want to build from
+          ref: main  # Replace with your target branch if needed
 
-      # Step 2: Install dependencies and tools required for building
+      # Step 2: Install dependencies required for the build process
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -43,7 +43,7 @@ jobs:
             wget \
             unzip
 
-      # Step 3: Install Android NDK for cross-compilation
+      # Step 3: Download and set up Android NDK for cross-compilation
       - name: Set up Android NDK
         run: |
           # Download and extract Android NDK
@@ -51,26 +51,27 @@ jobs:
           unzip android-ndk-r21e-linux-x86_64.zip
           export NDK_HOME=$PWD/android-ndk-r21e
 
-      # Step 4: Configure Kernel (adjust config file for your device)
+      # Step 4: Configure the kernel for Exynos 850 (Galaxy A21s)
       - name: Configure Kernel
         run: |
           cd $GITHUB_WORKSPACE
-          make ARCH=arm64 exynos850_defconfig  # Replace with the appropriate defconfig
+          # Use exynos850_defconfig for the Galaxy A21s or your device's defconfig
+          make ARCH=arm64 exynos850_defconfig  # Replace with the appropriate defconfig if different
 
-      # Step 5: Build the Kernel
+      # Step 5: Build the kernel
       - name: Build Kernel
         run: |
-          # Use cross-compiler to build kernel
+          # Use the Android NDK toolchain to cross-compile the kernel
           make ARCH=arm64 CROSS_COMPILE=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android- -j$(nproc)
 
-      # Step 6: Create Boot Image (optional, can be skipped if not needed)
+      # Step 6: (Optional) Create a boot image if necessary
       - name: Create Boot Image
         run: |
           mkbootimg --kernel arch/arm64/boot/Image.gz --ramdisk ramdisk.img --cmdline "console=ttyS0,115200n8" -o boot.img
 
-      # Step 7: Upload the Boot Image as an Artifact
+      # Step 7: Upload the boot image as an artifact
       - name: Upload Boot Image
         uses: actions/upload-artifact@v2
         with:
           name: boot-image
-          path: boot.img  # Replace with path to your generated boot image
+          path: boot.img  # Replace with the actual path to your generated boot image
