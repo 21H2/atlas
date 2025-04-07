@@ -3,28 +3,29 @@ name: Build Exynos 850 Kernel for Galaxy A21s
 on:
   push:
     branches:
-      - main
+      - master  # Ensure 'master' is the correct default branch
   pull_request:
     branches:
-      - main
-  workflow_dispatch: # Allows manual trigger
+      - master
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest  # Ubuntu runner to build the kernel
 
     steps:
-      # Step 1: Set up Git user configuration (fix possible git user issues)
+      # Step 1: Configure Git user configuration
       - name: Configure Git User
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-
-      # Step 2: Checkout the repository
+          
+      # Step 2: Checkout the repository (adjust branch if necessary)
       - name: Checkout Repository
-        uses: actions/checkout@v3  # Ensure the latest version of checkout
+        uses: actions/checkout@v3  # Make sure you use the latest version
         with:
-          ref: main  # Make sure 'main' is the correct branch, or replace with your default branch
+          ref: master  # Ensure you use the correct branch (e.g., 'master')
+          fetch-depth: 2  # Increased depth to avoid issues with shallow clones
 
       # Step 3: Install dependencies
       - name: Install Dependencies
