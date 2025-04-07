@@ -1,0 +1,76 @@
+name: Build Exynos 850 Kernel
+
+on:
+  push:
+    branches:
+      - main   # Trigger on push to the main branch, or adjust as necessary
+  pull_request:
+    branches:
+      - main   # Trigger build for pull requests to main
+  workflow_dispatch: # Manually trigger the build process
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use Ubuntu-based runner
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          ref: main  # Replace with the branch you want to build from
+
+      # Step 2: Install dependencies and tools required for building
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            bc \
+            git \
+            gcc \
+            g++ \
+            make \
+            python3 \
+            libncurses5-dev \
+            libncursesw5-dev \
+            bison \
+            flex \
+            libssl-dev \
+            ccache \
+            curl \
+            libelf-dev \
+            wget \
+            unzip
+
+      # Step 3: Install Android NDK for cross-compilation
+      - name: Set up Android NDK
+        run: |
+          # Download and extract Android NDK
+          wget https://dl.google.com/linux/direct/android-ndk-r21e-linux-x86_64.zip
+          unzip android-ndk-r21e-linux-x86_64.zip
+          export NDK_HOME=$PWD/android-ndk-r21e
+
+      # Step 4: Configure Kernel (adjust config file for your device)
+      - name: Configure Kernel
+        run: |
+          cd $GITHUB_WORKSPACE
+          make ARCH=arm64 exynos850_defconfig  # Replace with the appropriate defconfig
+
+      # Step 5: Build the Kernel
+      - name: Build Kernel
+        run: |
+          # Use cross-compiler to build kernel
+          make ARCH=arm64 CROSS_COMPILE=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android- -j$(nproc)
+
+      # Step 6: Create Boot Image (optional, can be skipped if not needed)
+      - name: Create Boot Image
+        run: |
+          mkbootimg --kernel arch/arm64/boot/Image.gz --ramdisk ramdisk.img --cmdline "console=ttyS0,115200n8" -o boot.img
+
+      # Step 7: Upload the Boot Image as an Artifact
+      - name: Upload Boot Image
+        uses: actions/upload-artifact@v2
+        with:
+          name: boot-image
+          path: boot.img  # Replace with path to your generated boot image
