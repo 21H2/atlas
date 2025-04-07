@@ -3,24 +3,24 @@ name: Build Exynos 850 Kernel for Galaxy A21s
 on:
   push:
     branches:
-      - main   # Trigger on push to the main branch (adjust if you need a different branch)
+      - main
   pull_request:
     branches:
-      - main   # Trigger build for pull requests to the main branch
-  workflow_dispatch: # Manually trigger the build process from the GitHub UI
+      - main
+  workflow_dispatch: # Allows manual trigger
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use an Ubuntu-based runner
+    runs-on: ubuntu-latest  # Ubuntu runner to build the kernel
 
     steps:
       # Step 1: Checkout the repository
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
-          ref: main  # Replace with your target branch if needed
+          ref: main
 
-      # Step 2: Install dependencies required for the build process
+      # Step 2: Install dependencies
       - name: Install Dependencies
         run: |
           sudo apt-get update
@@ -43,35 +43,32 @@ jobs:
             wget \
             unzip
 
-      # Step 3: Download and set up Android NDK for cross-compilation
+      # Step 3: Set up Android NDK for cross-compilation
       - name: Set up Android NDK
         run: |
-          # Download and extract Android NDK
           wget https://dl.google.com/linux/direct/android-ndk-r21e-linux-x86_64.zip
           unzip android-ndk-r21e-linux-x86_64.zip
           export NDK_HOME=$PWD/android-ndk-r21e
 
-      # Step 4: Configure the kernel for Exynos 850 (Galaxy A21s)
+      # Step 4: Configure the Kernel for Exynos 850 (Galaxy A21s)
       - name: Configure Kernel
         run: |
           cd $GITHUB_WORKSPACE
-          # Use exynos850_defconfig for the Galaxy A21s or your device's defconfig
-          make ARCH=arm64 exynos850_defconfig  # Replace with the appropriate defconfig if different
+          make ARCH=arm64 exynos850_defconfig  # Replace with your actual defconfig if needed
 
-      # Step 5: Build the kernel
+      # Step 5: Build the Kernel with the Android NDK toolchain
       - name: Build Kernel
         run: |
-          # Use the Android NDK toolchain to cross-compile the kernel
           make ARCH=arm64 CROSS_COMPILE=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android- -j$(nproc)
 
-      # Step 6: (Optional) Create a boot image if necessary
+      # Step 6: (Optional) Create Boot Image from the kernel
       - name: Create Boot Image
         run: |
           mkbootimg --kernel arch/arm64/boot/Image.gz --ramdisk ramdisk.img --cmdline "console=ttyS0,115200n8" -o boot.img
 
-      # Step 7: Upload the boot image as an artifact
+      # Step 7: Upload Boot Image as an Artifact (Updated to v4)
       - name: Upload Boot Image
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Updated to v4
         with:
           name: boot-image
-          path: boot.img  # Replace with the actual path to your generated boot image
+          path: boot.img
