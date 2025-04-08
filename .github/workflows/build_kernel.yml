@@ -84,9 +84,10 @@ jobs:
       - name: Create Boot Image
         run: |
           mkbootimg --kernel out/arch/arm64/boot/Image.gz --ramdisk ramdisk.img --cmdline "console=ttyS0,115200n8" -o out/boot.img
-
       # Step 9: Upload Boot Image as an Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: boot-image
-          path: out/boot.img
+      - name: Upload Boot Image as an Artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: boot-image
+            path: out/boot.img
+
