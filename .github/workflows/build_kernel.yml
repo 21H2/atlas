@@ -59,6 +59,12 @@ jobs:
           export CROSS_COMPILE=$PWD/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
           export PATH=$PWD/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin:$PATH
 
+      # Verify toolchain installation
+      - name: Verify Toolchain
+        run: |
+          which aarch64-linux-gnu-ld
+          aarch64-linux-gnu-ld --version
+
       # Step 5: Set up Clang Toolchain
       - name: Set up Clang Toolchain
         run: |
