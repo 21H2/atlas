@@ -67,7 +67,12 @@ jobs:
           export LLVM=1
           export LLVM_IAS=1
 
-      # Step 6: Enter Build Directory and Compile Kernel
+      # Step 6: Clone the forked upstream_exynos850 repository
+      - name: Clone Forked Upstream Exynos850
+        run: |
+          git clone https://github.com/21H2/upstream_exynos850.git
+          
+      # Step 7: Enter Build Directory and Compile Kernel
       - name: Compile Kernel
         run: |
           cd upstream_exynos850
@@ -75,13 +80,12 @@ jobs:
           make ARCH=arm64 O=out CC=clang exynos850-a21snsxx_defconfig
           make ARCH=arm64 O=out CC=clang -j$(nproc)
 
-      # Step 7: Create Boot Image
+      # Step 8: Create Boot Image
       - name: Create Boot Image
         run: |
           mkbootimg --kernel out/arch/arm64/boot/Image.gz --ramdisk ramdisk.img --cmdline "console=ttyS0,115200n8" -o out/boot.img
 
-      # Step 8: Upload Boot Image as an Artifact
-      - name: Upload Boot Image
+      # Step 9: Upload Boot Image as an Artifact
         uses: actions/upload-artifact@v4
         with:
           name: boot-image
